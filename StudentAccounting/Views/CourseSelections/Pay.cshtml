@@ -1,0 +1,106 @@
+﻿@model StudentAccounting.Models.CourseSelection
+
+@{
+    ViewData["Title"] = "Pay";
+    double totalOwing = 0;
+}
+
+<h2>Pay</h2>
+
+<div>
+    <h4>Enrollment</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Student.Name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Student.Name)
+        </dd>
+        <dt>
+            Selected Courses
+        </dt>
+        <dd>
+            <table class="table">
+                <tr>
+                    <th>Course Name</th>
+                    <th>Cost</th>
+                    <th>Paid</th>
+                    <th>Owing</th>
+                    <th></th>
+                </tr>
+                @{
+                    double owing = 0;
+                    CourseSelectionOwing courseSelectionOwing;
+                    @foreach (var item in Model.Student.CourseSelections)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Course.CourseName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Course.Cost)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Paid)
+                            </td>
+                            <td>
+                                @{
+                                    courseSelectionOwing = Model.Student.CourseSelectionOwings.FirstOrDefault(m => m.CourseID == item.CourseID);
+                                    if (courseSelectionOwing == null)
+                                    {
+                                        // If couldn't find the corresponding owing info, then use course cost and paid info to calculate the owing info
+                                        owing = item.Course.Cost - item.Paid;
+                                    }
+                                    else
+                                    {
+                                        owing = courseSelectionOwing.Owing;
+                                        totalOwing += courseSelectionOwing.Owing;
+                                    }
+                                    @owing
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    if (owing > 0)
+                                    {
+                                        <form asp-action="Pay" asp-route-id="@item.ID" onsubmit="return confirm('Are you sure to pay?')">
+                                            <input type="hidden" asp-for="StudentID" value="@item.StudentID" />
+                                            <input type="hidden" asp-for="CourseID" value="@item.CourseID" />
+                                            <input type="number" asp-for="Paid" value="@owing" />
+                                            <input type="submit" value="Pay" class="btn btn-default" />
+                                            <!--<span asp-validation-for="Paid" class="text-danger"></span>-->
+                                        </form>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                                    }
+                }
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        Total Owing
+                    </td>
+                    <td>
+                        @totalOwing
+                    </td>
+                </tr>
+            </table>
+        </dd>
+        @{
+            if (totalOwing <= 0)
+            {
+                <dd>
+                    <h4>There is no need to pay</h4>
+                </dd>
+            }
+        }
+    </dl>
+</div>
+<div>
+    <a asp-action="Create" asp-route-id="@Model.Student.StudentID">Add</a> |
+    <a asp-action="Delete" asp-route-id="@Model.Student.StudentID">Delete</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

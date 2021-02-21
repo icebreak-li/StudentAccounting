@@ -1,0 +1,84 @@
+﻿@model StudentAccounting.Models.Student
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Enrollment</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt>
+            Selected Courses
+        </dt>
+        <dd>
+            <table class="table">
+                <tr>
+                    <th>Course Name</th>
+                    <th>Cost</th>
+                    <th>Paid</th>
+                    <th>Owing</th>
+                </tr>
+                @{
+                    double totalOwing = 0;
+                    double owing = 0;
+                    CourseSelectionOwing courseSelectionOwing;
+                    @foreach (var item in Model.CourseSelections)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Course.CourseName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Course.Cost)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Paid)
+                            </td>
+                            <td>
+                                @{
+                                    courseSelectionOwing = Model.CourseSelectionOwings.FirstOrDefault(m => m.CourseID == item.CourseID);
+                                    if (courseSelectionOwing == null)
+                                    {
+                                        // If couldn't find the corresponding owing info, then use course cost and paid info to calculate the owing info
+                                        owing = item.Course.Cost - item.Paid;
+                                    }
+                                    else
+                                    {
+                                        owing = courseSelectionOwing.Owing;
+                                        totalOwing += courseSelectionOwing.Owing;
+                                    }
+                                    @owing
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        Total Owing
+                    </td>
+                    <td>
+                        @totalOwing
+                    </td>
+                </tr>
+            </table>
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Create" asp-route-id="@Model.StudentID">Add</a> |
+    <a asp-action="Delete" asp-route-id="@Model.StudentID">Delete</a> |
+    <a asp-action="Pay" asp-route-id="@Model.StudentID">Pay</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
